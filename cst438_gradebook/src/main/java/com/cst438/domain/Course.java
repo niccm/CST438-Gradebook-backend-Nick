@@ -10,7 +10,7 @@ import javax.persistence.OrderBy;
 
 @Entity
 public class Course {
-	
+
 	@Id
 	private int course_id;
 	private String title;

@@ -13,7 +13,7 @@ import javax.persistence.OneToMany;
 
 @Entity
 public class Enrollment {
-	
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private int id;

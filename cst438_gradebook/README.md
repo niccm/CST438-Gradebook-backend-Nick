@@ -15,7 +15,7 @@
 #### PUT /gradebook/{id}  
 - replaced scores for assignment id.
 - body contains JSON for GradebookDTO
-
+ 
 #### POST /course/{course_id}/finalgrades
 - calculates final grades for course_id
 - final grades are sent to registration service

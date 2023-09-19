@@ -31,7 +31,7 @@ public class RegistrationServiceREST implements RegistrationService {
 	public RegistrationServiceREST() {
 		System.out.println("REST registration service ");
 	}
-	
+
 	@Override
 	public void sendFinalGrades(int course_id , FinalGradeDTO[] grades) { 
 		
