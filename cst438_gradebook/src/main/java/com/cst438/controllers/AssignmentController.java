@@ -89,17 +89,12 @@ public class AssignmentController {
 //	Update
 	@PutMapping("/update")
 	public void update(AssignmentDTO DTO){
-		Assignment tempUpdate = new Assignment();
-		tempUpdate.setName(DTO.assignmentName());
-		tempUpdate.setId(DTO.id());
-		tempUpdate.setDueDate(Date.valueOf(DTO.dueDate()));
-		int id = DTO.courseId();
-		Course c = courseRepository.findById(DTO.courseId()).orElse(null);
-		tempUpdate.setCourse(courseRepository.findById(id).get());
+		Assignment temp = assignmentRepository.findById(DTO.id()).get();
+		temp.setName(DTO.assignmentName());
+		temp.setCourse(courseRepository.findById(DTO.courseId()).get());
+		temp.setDueDate(Date.valueOf(DTO.dueDate()));
 
-		assignmentRepository.save(tempUpdate);
-
-
+		assignmentRepository.save(temp);
 	}
 
 //	Delete
@@ -112,6 +107,7 @@ public class AssignmentController {
 		int id = DTO.courseId();
 		Course c = courseRepository.findById(DTO.courseId()).orElse(null);
 		tempDelete.setCourse(courseRepository.findById(id).get());
+
 		assignmentRepository.delete(tempDelete);
 	}
 
