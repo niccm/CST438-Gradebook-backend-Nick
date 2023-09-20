@@ -1,18 +1,13 @@
 package com.cst438.controllers;
 
+import java.sql.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.cst438.domain.Assignment;
@@ -51,4 +46,74 @@ public class AssignmentController {
 	}
 	
 	// TODO create CRUD methods for Assignment
+
+//	Create
+	@PostMapping("/assignment")
+	public int insertNewAssignment(@RequestBody AssignmentDTO userAssignment){
+		int courseId = userAssignment.courseId();
+		Course c = courseRepository.findById(userAssignment.courseId()).orElse(null);
+		if( c.getInstructor() == "jgross@csumb.edu" || c.getInstructor() == "dwisneski@csumb.edu" || c.getInstructor() =="sislam@csumb.edu"){
+			Assignment newAssignment = new Assignment();
+			newAssignment.setName(userAssignment.assignmentName());
+			newAssignment.setDueDate(Date.valueOf(userAssignment.dueDate()));
+			newAssignment.setCourse(courseRepository.findById(courseId).get());
+
+			assignmentRepository.save(newAssignment);
+			return newAssignment.getId();
+		}
+		return 0;
+	}
+
+
+//	Retrieve
+//	@GetMapping("/result/{alias}")
+//	public MultiplyResult[] getLastNresults(
+//			@PathVariable("alias") String alias,
+//			@RequestParam("lastN") Optional<Integer> lastN) {
+//		int n = lastN.orElse(5);
+//		return history.getHistory(alias, n);
+//	}
+	@GetMapping("/assignment/{alias}")
+	public AssignmentDTO getAssignmentByID(@PathVariable("alias") int alias){
+		Optional<Assignment> newAssignment = assignmentRepository.findById(alias);
+//		System.out.println(assignmentRepository.findById(alias));
+//		System.out.println(newAssignment);
+		Assignment returned = newAssignment.get();
+//		System.out.println(returned);
+		AssignmentDTO yo = new AssignmentDTO(returned.getId(), returned.getName(), returned.getDueDate().toString(), returned.getCourse().getTitle(), returned.getCourse().getCourse_id());
+
+		return yo;
+	}
+
+
+//	Update
+	@PutMapping("/update")
+	public void update(AssignmentDTO DTO){
+		Assignment tempUpdate = new Assignment();
+		tempUpdate.setName(DTO.assignmentName());
+		tempUpdate.setId(DTO.id());
+		tempUpdate.setDueDate(Date.valueOf(DTO.dueDate()));
+		int id = DTO.courseId();
+		Course c = courseRepository.findById(DTO.courseId()).orElse(null);
+		tempUpdate.setCourse(courseRepository.findById(id).get());
+
+		assignmentRepository.save(tempUpdate);
+
+
+	}
+
+//	Delete
+	@DeleteMapping("/delete")
+	public void delete(AssignmentDTO DTO){
+		Assignment tempDelete = new Assignment();
+		tempDelete.setName(DTO.assignmentName());
+		tempDelete.setId(DTO.id());
+		tempDelete.setDueDate(Date.valueOf(DTO.dueDate()));
+		int id = DTO.courseId();
+		Course c = courseRepository.findById(DTO.courseId()).orElse(null);
+		tempDelete.setCourse(courseRepository.findById(id).get());
+		assignmentRepository.delete(tempDelete);
+	}
+
+
 }
