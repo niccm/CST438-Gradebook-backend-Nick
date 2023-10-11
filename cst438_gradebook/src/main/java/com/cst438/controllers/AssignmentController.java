@@ -17,51 +17,57 @@ import com.cst438.domain.Course;
 import com.cst438.domain.CourseRepository;
 
 @RestController
-@CrossOrigin 
+@CrossOrigin
 public class AssignmentController {
-	
+
 	@Autowired
 	AssignmentRepository assignmentRepository;
-	
+
 	@Autowired
 	CourseRepository courseRepository;
-	
+
 	@GetMapping("/assignment")
 	public AssignmentDTO[] getAllAssignmentsForInstructor() {
 		// get all assignments for this instructor
-		String instructorEmail = "dwisneski@csumb.edu";  // user name (should be instructor's email) 
+		String instructorEmail = "dwisneski@csumb.edu";  // user name (should be instructor's email)
 		List<Assignment> assignments = assignmentRepository.findByEmail(instructorEmail);
 		AssignmentDTO[] result = new AssignmentDTO[assignments.size()];
 		for (int i=0; i<assignments.size(); i++) {
 			Assignment as = assignments.get(i);
 			AssignmentDTO dto = new AssignmentDTO(
-					as.getId(), 
-					as.getName(), 
-					as.getDueDate().toString(), 
-					as.getCourse().getTitle(), 
+					as.getId(),
+					as.getName(),
+					as.getDueDate().toString(),
+					as.getCourse().getTitle(),
 					as.getCourse().getCourse_id());
 			result[i]=dto;
 		}
 		return result;
 	}
-	
+
 	// TODO create CRUD methods for Assignment
 
 //	Create
 	@PostMapping("/assignment")
 	public int insertNewAssignment(@RequestBody AssignmentDTO userAssignment){
-		int courseId = userAssignment.courseId();
+		String instructorEmail = "dwisneski@csumb.edu";
 		Course c = courseRepository.findById(userAssignment.courseId()).orElse(null);
-		if( c.getInstructor() == "jgross@csumb.edu" || c.getInstructor() == "dwisneski@csumb.edu" || c.getInstructor() =="sislam@csumb.edu"){
+
+		if (c==null || ! c.getInstructor().equals(instructorEmail)) {
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "course id not found or not authorized "+ userAssignment.courseId());
+		}
+
+
 			Assignment newAssignment = new Assignment();
 			newAssignment.setName(userAssignment.assignmentName());
 			newAssignment.setDueDate(Date.valueOf(userAssignment.dueDate()));
-			newAssignment.setCourse(courseRepository.findById(courseId).get());
+			newAssignment.setCourse(c);
+
 
 			assignmentRepository.save(newAssignment);
 			return newAssignment.getId();
-		}
-		return 0;
+
+
 	}
 
 
@@ -87,8 +93,13 @@ public class AssignmentController {
 
 
 //	Update
-	@PutMapping("/update")
-	public void update(AssignmentDTO DTO){
+@PutMapping("/assignment/{id}")
+public void updateAssignment(@PathVariable("id") int id, @RequestBody AssignmentDTO DTO) {
+		String instructorEmail = "dwisneski@csumb.edu";  // user name (should be instructor's email)
+		Assignment a = assignmentRepository.findById(id).orElse(null);
+		if (a==null || ! a.getCourse().getInstructor().equals(instructorEmail)) {
+			throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "assignment not found or not authorized "+id);
+		}
 		Assignment temp = assignmentRepository.findById(DTO.id()).get();
 		temp.setName(DTO.assignmentName());
 		temp.setCourse(courseRepository.findById(DTO.courseId()).get());
@@ -98,18 +109,26 @@ public class AssignmentController {
 	}
 
 //	Delete
-	@DeleteMapping("/delete")
-	public void delete(AssignmentDTO DTO){
-		Assignment tempDelete = new Assignment();
-		tempDelete.setName(DTO.assignmentName());
-		tempDelete.setId(DTO.id());
-		tempDelete.setDueDate(Date.valueOf(DTO.dueDate()));
-		int id = DTO.courseId();
-		Course c = courseRepository.findById(DTO.courseId()).orElse(null);
-		tempDelete.setCourse(courseRepository.findById(id).get());
+@DeleteMapping("/assignment/{id}")
+	public void deleteAssignment(@PathVariable("id") int id, @RequestParam("force") Optional<String> force) {
+	String instructorEmail = "dwisneski@csumb.edu";
+	Assignment tempA = assignmentRepository.findById(id).orElse(null);
 
-		assignmentRepository.delete(tempDelete);
+	if (tempA == null) {
+		return;
 	}
+	if (!tempA.getCourse().getInstructor().equals(instructorEmail)) {
+		System.out.println(tempA.getCourse().getInstructor());
+	    	throw  new ResponseStatusException( HttpStatus.FORBIDDEN, "not authorized "+id);
+	    }
+	if (tempA.getAssignmentGrades().size()==0 || force.isPresent()) {
+	    	assignmentRepository.deleteById(id);
+	    } else {
+	    	throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "assignment has grades ");
+	    }
 
+
+
+	}
 
 }
