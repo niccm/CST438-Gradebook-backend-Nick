@@ -64,7 +64,7 @@ public class RegistrationServiceMQ implements RegistrationService {
 		 
 		System.out.println("Start sendFinalGrades "+course_id);
 		String data = asJsonString(grades);
-		rabbitTemplate.convertAndSend(registrationQueue.getActualName(), data);
+		rabbitTemplate.convertAndSend(registrationQueue.getName(), data);
 		
 	}
 	

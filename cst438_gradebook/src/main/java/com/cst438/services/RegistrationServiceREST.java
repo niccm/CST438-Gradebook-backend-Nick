@@ -34,8 +34,6 @@ public class RegistrationServiceREST implements RegistrationService {
 
 	@Override
 	public void sendFinalGrades(int course_id , FinalGradeDTO[] grades) {
-		//TODO use restTemplate to send final grades to registration service
-
 		restTemplate.put("/course/"+course_id+"/finalgrades",grades);
 
 
@@ -68,7 +66,9 @@ public class RegistrationServiceREST implements RegistrationService {
 		tempEnrollment.setCourse(c);
 		enrollmentRepository.save(tempEnrollment);
 
-		return enrollmentDTO;
+		EnrollmentDTO resultDTO = new EnrollmentDTO(tempEnrollment.getId(), tempEnrollment.getStudentEmail(), tempEnrollment.getStudentName(), tempEnrollment.getCourse().getCourse_id());
+
+		return resultDTO;
 	}
 
 }
