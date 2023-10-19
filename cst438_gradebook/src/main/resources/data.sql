@@ -18,7 +18,8 @@ insert into enrollment (id, student_email, student_name, course_id)  values
 (1, 'test@csumb.edu', 'test', 31045),
 (2, 'dwisneski@csumb.edu', 'david', 31045),
 (3, 'trebold@csumb.edu', 'tom', 31045),
-(4, 'test4@csumb.edu', 'test4', 31045)
+(4, 'test4@csumb.edu', 'test4', 31045),
+(5,'trebold@csumb.edu', 'tom', 40443)
 ; 
 
 insert into assignment_grade (score, assignment_id, enrollment_id) values 
