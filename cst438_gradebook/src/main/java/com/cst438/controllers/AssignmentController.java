@@ -1,5 +1,6 @@
 package com.cst438.controllers;
 
+import java.security.Principal;
 import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
@@ -27,9 +28,9 @@ public class AssignmentController {
 	CourseRepository courseRepository;
 
 	@GetMapping("/assignment")
-	public AssignmentDTO[] getAllAssignmentsForInstructor() {
+	public AssignmentDTO[] getAllAssignmentsForInstructor(Principal principal) {
 		// get all assignments for this instructor
-		String instructorEmail = "dwisneski@csumb.edu";  // user name (should be instructor's email)
+		String instructorEmail = principal.getName();  // user name (should be instructor's email)
 		List<Assignment> assignments = assignmentRepository.findByEmail(instructorEmail);
 		AssignmentDTO[] result = new AssignmentDTO[assignments.size()];
 		for (int i=0; i<assignments.size(); i++) {
@@ -49,8 +50,8 @@ public class AssignmentController {
 
 //	Create
 	@PostMapping("/assignment")
-	public int insertNewAssignment(@RequestBody AssignmentDTO userAssignment){
-		String instructorEmail = "dwisneski@csumb.edu";
+	public int insertNewAssignment(@RequestBody AssignmentDTO userAssignment, Principal principal){
+		String instructorEmail = principal.getName();
 		Course c = courseRepository.findById(userAssignment.courseId()).orElse(null);
 
 		if (c==null || ! c.getInstructor().equals(instructorEmail)) {
@@ -80,13 +81,14 @@ public class AssignmentController {
 //		return history.getHistory(alias, n);
 //	}
 	@GetMapping("/assignment/{alias}")
-	public AssignmentDTO getAssignmentByID(@PathVariable("alias") int alias){
-		Optional<Assignment> newAssignment = assignmentRepository.findById(alias);
-//		System.out.println(assignmentRepository.findById(alias));
-//		System.out.println(newAssignment);
-		Assignment returned = newAssignment.get();
-//		System.out.println(returned);
-		AssignmentDTO yo = new AssignmentDTO(returned.getId(), returned.getName(), returned.getDueDate().toString(), returned.getCourse().getTitle(), returned.getCourse().getCourse_id());
+	public AssignmentDTO getAssignmentByID(@PathVariable("alias") int alias, Principal principal){
+		String instructorEmail = principal.getName();
+		Assignment newAssignment = assignmentRepository.findById(alias).orElse(null);
+		if(!newAssignment.getCourse().getInstructor().equals(instructorEmail)){
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not Authorized");
+		}
+//
+		AssignmentDTO yo = new AssignmentDTO(newAssignment.getId(), newAssignment.getName(), newAssignment.getDueDate().toString(), newAssignment.getCourse().getTitle(), newAssignment.getCourse().getCourse_id());
 
 		return yo;
 	}
